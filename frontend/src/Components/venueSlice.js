@@ -33,6 +33,12 @@ export const venueSlice = createSlice({
         cost: 1100,
         quantity: 0,
         },
+        {
+            img: "https://cdn.pixabay.com/photo/2017/03/28/12/17/chairs-2181994_1280.jpg",
+            name: "Interview Room (Capacity:10)",
+            cost: 1000,
+            quantity: 0,
+        },
     ],
     reducers:{
         incrementQuantity: (state, action) => {

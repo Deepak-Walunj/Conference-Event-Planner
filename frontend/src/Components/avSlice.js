@@ -33,6 +33,12 @@ export const avSlice = createSlice({
             cost: 80,
             quantity: 0,
         },
+        {
+            img: "https://media.istockphoto.com/id/173240143/photo/tv-with-two-clipping-paths.jpg?s=612x612&w=0&k=20&c=TRApgjWXU7VPzwfXRMxuskU7bbfokpLArfOF78mPB0k=",
+            name: "Television",
+            cost: 100,
+            quantity: 0,
+        }
 
     ],
 

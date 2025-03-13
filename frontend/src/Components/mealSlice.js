@@ -3,10 +3,12 @@ import { createSlice } from "@reduxjs/toolkit";
 export const mealsSlice = createSlice({
     name: "meals",
     initialState: [
-        { name: 'Breakfast', cost: 50, selected: false},
-        { name: 'High Tea', cost: 25, selected: false},
-        { name: 'Lunch', cost: 65, selected: false},
-        { name: 'Dinner', cost: 70, selected: false},
+        { name: 'Breakfast', cost: 15, selected: false},
+        { name: 'High Tea', cost: 5, selected: false},
+        { name: 'Lunch', cost: 50, selected: false},
+        { name: 'Dinner', cost: 60, selected: false},
+        { name: 'Beverage', cost: 8, selected: false},
+        { name: 'Dessert', cost: 20, selected: false}
     ],
     reducers: {
         toggleMealSelection: (state, action) => {

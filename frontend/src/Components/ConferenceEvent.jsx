@@ -164,11 +164,6 @@ const ConferenceEvent = () => {
               Meals
             </a>
           </div>
-          <button
-            className="details_button"
-            onClick={() => setShowItems(!showItems)}>
-            Show Details
-          </button>
         </div>
       </nav>
 
@@ -242,7 +237,7 @@ const ConferenceEvent = () => {
                 )
               )}
               </div>
-              <div className="total_cost">Total Cost:{avTotalCost}</div>
+              <div className="total_cost">Total Cost: ${avTotalCost}</div>
             </div>
 
             {/* Meal Section */}
@@ -271,8 +266,13 @@ const ConferenceEvent = () => {
                     </div>
                 ))}
               </div>
-              <div className="total_cost">Total Cost: {mealsTotalCost}</div>
+              <div className="total_cost">Total Cost: ${mealsTotalCost}</div>
             </div>
+            <button
+            className="details_button"
+            onClick={() => setShowItems(true)}>
+            Show Details
+          </button>
           </div>
         ) : (
           <div className="total_amount_detail">
@@ -280,6 +280,7 @@ const ConferenceEvent = () => {
           </div>
         )}
       </div>
+      
     </>
   );
 };
