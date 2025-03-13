@@ -9,16 +9,13 @@ import {toggleMealSelection} from './mealSlice.js'
 const ConferenceEvent = () => {
   const [showItems, setShowItems] = useState(false);
   const [numberOfPeople, setNumberOfPeople] = useState(1);
+  
+
   const venueItems = useSelector((state) => state.venue);
   const avItems = useSelector((state) => state.av)
   const mealsItems = useSelector((state) => state.meals)
   const dispatch = useDispatch();
-  // const remainingAuditoriumQuantity = 3-venueItems.find((item) => item.name === "Auditorium Hall (Capacity:200)").quantity;
-  const remainingAuditoriumQuantity = 3 - (
-  venueItems.find(
-    (item) => item.name === "Auditorium Hall (Capacity:200)" || item.name === "Conference Room (Capacity:15)"
-  )?.quantity || 0
-);
+
 
   const handleToggleItems = () => {
     console.log("handleToggleItems called");
@@ -41,24 +38,75 @@ const ConferenceEvent = () => {
   };
 
   const handleMealSelection = (index) => {
-    const item = mealsItems[index];
-    if (item.selected && item.type === "mealForPeople") {
-        // Ensure numberOfPeople is set before toggling selection
-        const newNumberOfPeople = item.selected ? numberOfPeople : 0;
-        dispatch(toggleMealSelection(index, newNumberOfPeople));
-    }
-    else {
-        dispatch(toggleMealSelection(index));
-    }
-};
+    dispatch(toggleMealSelection(index));
+  };
 
   const getItemsFromTotalCost = () => {
     const items = [];
-  };
+    venueItems.forEach((item) => {
+      if (item.quantity > 0){
+        items.push({...item, type:"venue"})
+      }
+    })
+
+    avItems.forEach((item) => {
+      if (item.quantity > 0) {
+        // Check if this item has already been added to the items array
+        const isAlreadyAdded = items.some(i => i.name === item.name && i.type === "av");
+        if (!isAlreadyAdded) {
+          items.push({...item, type: "av"});
+        }
+      }
+    });
+
+    mealsItems.forEach((item) => {
+      if (item.selected){
+        const itemForDisplay = {  ...item, type:"meals"}
+        if (item.numberOfPeople) {
+          itemForDisplay.numberOfPeople = numberOfPeople;
+        }
+        items.push(itemForDisplay);
+      }
+    })
+    return items
+    };
 
   const items = getItemsFromTotalCost();
 
-  const ItemsDisplay = ({ items }) => {};
+  const ItemsDisplay = ({ items }) => {
+    console.log(items)
+    return <>
+    <div className="display_box1">
+    {items.length === 0 && <p>No items selected</p>}
+    <table className="table_item_data">
+      <thead>
+        <tr>
+        <th>Name</th>
+        <th>Unit Cost</th>
+        <th>Quantity</th>
+        <th>Subtotal</th>
+        </tr>
+      </thead>
+      <tbody>
+        {items.map((item, idx)=>(
+          <tr key={idx}>
+              <td>{item.name}</td>
+              <td>{item.cost}</td>
+              <td>
+                {item.type==="meals" || item.numberOfPeople ? `For ${numberOfPeople} People` : item.quantity}
+              </td>
+              <td>{item.type === "meals" || item.numberOfPeople
+                  ? `${item.cost * numberOfPeople}`
+                  : `${item.cost * item.quantity}`}
+              </td>
+          </tr>
+        ))}
+      </tbody>
+    </table>
+    </div>
+    </>
+  };
+
   const calculateTotalCost = (section) => {
     let totalCost = 0;
     if (section === "venue") {
@@ -73,14 +121,24 @@ const ConferenceEvent = () => {
     }
     else if (section === "meals"){
       mealsItems.forEach((item)=>{
-        totalCost += item.cost*item.quantity
+        if (item.selected){
+          totalCost += item.cost*numberOfPeople
+        }
       })
     }
     return totalCost;
   };
+
   const venueTotalCost = calculateTotalCost("venue");
-  const   avTotalCost = calculateTotalCost("av")
-  const   mealsTotalCost = calculateTotalCost("meals")
+  const avTotalCost = calculateTotalCost("av")
+  const mealsTotalCost = calculateTotalCost("meals")
+  const totalCosts ={
+    venue: venueTotalCost,
+    av: avTotalCost,
+    meals: mealsTotalCost
+  }
+
+
   const navigateToProducts = (idType) => {
     if (idType == "#venue" || idType == "#addons" || idType == "#meals") {
       if (showItems) {
@@ -130,24 +188,6 @@ const ConferenceEvent = () => {
                     <div className="text">{item.name}</div>
                     <div>${item.cost}</div>
                     <div className="button_container">
-                      {venueItems[index].name ===
-                      "Auditorium Hall (Capacity:200)" ? (
-                        <>
-                          <button className={venueItems[index].quantity === 0 ? "btn-warning btn-disabled" : "btn-minus btn-warning"}
-                            onClick={() => handleRemoveFromCart(index)}>
-                            &#8211;
-                          </button>
-                          <span className="selected_count">
-                            {venueItems[index].quantity > 0 ? ` ${venueItems[index].quantity}`: "0"}
-                          </span>
-                          <button
-                            className={remainingAuditoriumQuantity === 0 ? "btn-success btn-disabled": "btn-success btn-plus"
-                            }
-                            onClick={() => handleAddToCart(index)}>
-                            &#43;
-                          </button>
-                        </>
-                      ) : (
                         <div className="button_container">
                           <button
                             className={
@@ -173,7 +213,6 @@ const ConferenceEvent = () => {
                             &#43;
                           </button>
                         </div>
-                      )}
                     </div>
                   </div>
                 ))}
@@ -212,35 +251,32 @@ const ConferenceEvent = () => {
                 <h1>Meals Selection</h1>
               </div>
               <div className="input-container venue_selection">
-              <label htmlFor="numberOfPeople"><h3>Number of People:</h3></label>
-              <input type="number" className="input_box5" id="numberOfPeople" value={numberOfPeople}
-                  onChange={(e) => setNumberOfPeople(parseInt(e.target.value))}
-                  min="1"/>              
+                  <label htmlFor="numberOfPeople"><h3>Number of People:</h3></label>
+                  <input type="number" className="input_box5" id="numberOfPeople" value={numberOfPeople}
+                      onChange={(e) => setNumberOfPeople(parseInt(e.target.value))}
+                      min="1"
+                  />
               </div>
               <div className="meal_selection">
-                  {mealsItems.map((item, index) => (
-                      <div className="meal_item" key={index} style={{ padding: 15 }}>
-                          <div className="inner">
-                              <input type="checkbox" id={ `meal_${index}` }
-                                  checked={ item.selected }
-                                  onChange={() => handleMealSelection(index)}
-                              />
-                              <label htmlFor={`meal_${index}`}> {item.name} </label>
-                          </div>
-                          <div className="meal_cost">${item.cost}</div>
-                      </div>
-                  ))}
+                {mealsItems.map((item, index) => (
+                    <div className="meal_item" key={index} style={{ padding: 15 }}>
+                        <div className="inner">
+                            <input type="checkbox" id={ `meal_${index}` }
+                                checked={ item.selected }
+                                onChange={() => handleMealSelection(index)}
+                            />
+                            <label htmlFor={`meal_${index}`}> {item.name} </label>
+                        </div>
+                        <div className="meal_cost">${item.cost}</div>
+                    </div>
+                ))}
               </div>
               <div className="total_cost">Total Cost: {mealsTotalCost}</div>
             </div>
           </div>
         ) : (
           <div className="total_amount_detail">
-            <TotalCost
-              totalCosts={totalCosts}
-              handleClick={handleToggleItems}
-              ItemsDisplay={() => <ItemsDisplay items={items} />}
-            />
+            <TotalCost totalCosts={totalCosts} handleClick={handleToggleItems} ItemsDisplay={() => <ItemsDisplay items={items} />} />
           </div>
         )}
       </div>
